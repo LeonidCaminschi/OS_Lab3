@@ -11,6 +11,8 @@ mov es, bx     ; Set ES (Extra Segment) register to the segment address
 mov bx, 7e00h  ; Offset where the data will be loaded in the segment (destination address)
 int 13h        ; Call BIOS interrupt 13h to read sectors
 
+call write_Name_Group
+
 go:
 	call clean_screen  ; Clear the screen
 
@@ -930,7 +932,28 @@ print_units:
     mov ax, 0e00h        ; Display a new line
     int 10h              ; Using BIOS video services
     ret 2                ; Return from the subroutine, removing 2 bytes from the stack
+write_Name_Group:
+    mov ch, 35              ;631/18 = nr of track
+    mov cl, 1               ;631 mod 18 = nr os sector
+    mov dl, 0   
+    mov dh, 0
+    mov ax, 0               ; Clear AX
+    mov es, ax               ; Set ES to 0 (segment of Name_Group)
+    mov bx, Name_Group    ; Move Name_Group address to BX
+    mov ax, 0301h            ; Set AH to 03 (write sectors) and AL to 01 (sector count)
+    int 13h
 
+    mov ch, 37              ;660/18 = nr of track
+    mov cl, 12               ;660 mod 18 = nr os sector
+    mov dl, 0   
+    mov dh, 0
+    mov ax, 0               ; Clear AX
+    mov es, ax               ; Set ES to 0 (segment of Name_Group)
+    mov bx, Name_Group    ; Move Name_Group address to BX
+    mov ax, 0301h            ; Set AH to 03 (write sectors) and AL to 01 (sector count)
+    int 13h
+    ret
+  
 Options db "1.Write from Keyboard to Floppy", 0dh, 0ah, "2.Write from Floppy to RAM", 0dh, 0ah, "3.Write from RAM to Floppy", 0dh, 0ah
 Choose db "Choose option:", 0dh, 0ah, 0,
 
@@ -979,3 +1002,4 @@ BP_Buffer times 4 db 0
 
 Text_Buffer times 256 db 0
 Memory_Buffer times 512 db 0 
+Name_Group times 10 db "@@@FAF-211 Rotaru Ion###", 0
